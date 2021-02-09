@@ -103,6 +103,7 @@ func TestClient_CreateAccount(t *testing.T) {
 
 			assert.Equal(account.ID, tt.id)
 			assert.Equal(account.OrganisationID, tt.organisationID)
+			assert.Equal(account.Version, tt.want.Version)
 			assert.False(account.CreatedOn.IsZero())
 			assert.False(account.ModifiedOn.IsZero())
 
@@ -166,6 +167,72 @@ func TestClient_DeleteAccount(t *testing.T) {
 				} else {
 					t.Errorf("Client.DeleteAccount() wrong error type (%T) %v", err, err)
 				}
+			}
+		})
+	}
+}
+
+func TestClient_GetAccount(t *testing.T) {
+	client := newTestClient(t)
+	truncateAccounts(client, t)
+
+	testAccount, err := client.CreateAccount(testAccountID, testOrganisationID, &testAccountAttributes)
+	require.Nil(t, err)
+
+	assert := assert.New(t)
+
+	tests := []struct {
+		name              string
+		id                string
+		want              *Account
+		wantErr           bool
+		wantHTTPErr       bool
+		httpErrStatusCode int
+	}{
+		{
+			name:              "non-existing account",
+			id:                uuid.NewString(),
+			wantErr:           true,
+			wantHTTPErr:       true,
+			httpErrStatusCode: 404,
+		},
+		{
+			name:    "existing account",
+			id:      testAccount.ID,
+			want:    testAccount,
+			wantErr: false,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			account, err := client.GetAccount(tt.id)
+
+			if (err != nil) != tt.wantErr {
+				t.Errorf("Client.GetAccount() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+
+			if tt.wantHTTPErr {
+				var e *HTTPError
+				if errors.As(err, &e) {
+					assert.Equal(tt.httpErrStatusCode, e.StatusCode)
+				} else {
+					t.Errorf("Client.GetAccount() wrong error type (%T) %v", err, err)
+				}
+			}
+
+			if tt.want == nil {
+				return
+			}
+
+			assert.Equal(account.ID, tt.want.ID)
+			assert.Equal(account.OrganisationID, tt.want.OrganisationID)
+			assert.Equal(account.Version, tt.want.Version)
+			assert.False(account.CreatedOn.IsZero())
+			assert.False(account.ModifiedOn.IsZero())
+
+			if diff := deep.Equal(account.Attributes, tt.want.Attributes); diff != nil {
+				t.Error(diff)
 			}
 		})
 	}

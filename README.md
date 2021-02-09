@@ -51,9 +51,9 @@ API_BASE="http://somewhere.else" go test
 
 ## Development Notes
 
-1. I've choosen to write integration tests only. They cover most of the code paths. Ideally we should replace the `http.Client` in `Client` with an interface and write unit tests for `Client.DoRequest()`, as this is doing quite some work.
+1. I've choosen to write integration tests only. They cover most of the code paths and all of the happy paths. For a production-ready solution unit tests to cover the error cases could be added.
 
-2. There are some differences in attributes between the documentation and the fake account implementation (see: https://github.com/form3tech-oss/interview-accountapi/issues/38).
+2. There are some differences in the attributes between the documentation and the fake account implementation (see: https://github.com/form3tech-oss/interview-accountapi/issues/38).
 This API client currently only supports the non-deprecated working fields.
 
 3. Another (known) issue is that the delete endpoint currently always returns 204, also for non-existing accounts. (see: https://github.com/form3tech-oss/interview-accountapi/issues/30)
