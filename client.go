@@ -1,6 +1,7 @@
 package form3
 
 import (
+	"bytes"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -16,11 +17,11 @@ type Client struct {
 
 // Links contains links to related endpoints.
 type Links struct {
-	Self  string `json:"self"`
-	First string `json:"first"`
-	Last  string `json:"last"`
-	Next  string `json:"next"`
-	Prev  string `json:"prev"`
+	Self  string `json:"self,omitempty"`
+	First string `json:"first,omitempty"`
+	Last  string `json:"last,omitempty"`
+	Next  string `json:"next,omitempty"`
+	Prev  string `json:"prev,omitempty"`
 }
 
 // HTTPError contains additional information about a failed http request.
@@ -28,8 +29,8 @@ type HTTPError struct {
 	Response     *http.Response `json:"-"`
 	StatusCode   int            `json:"-"`
 	Status       string         `json:"-"`
-	ErrorCode    string         `json:"error_code"`
-	ErrorMessage string         `json:"error_message"`
+	ErrorCode    string         `json:"error_code,omitempty"`
+	ErrorMessage string         `json:"error_message,omitempty"`
 }
 
 // Error returns a string representation of the HTTPError.
@@ -63,7 +64,13 @@ func WithHTTPClient(client *http.Client) ClientOption {
 
 // NewRequest returns a http.Request for the given path with apiBase prepended.
 func (c *Client) NewRequest(method, path string, payload interface{}) (*http.Request, error) {
-	return http.NewRequest(method, fmt.Sprintf("%s%s", c.apiBase, path), nil)
+	if payload == nil {
+		return http.NewRequest(method, fmt.Sprintf("%s%s", c.apiBase, path), nil)
+	}
+
+	buf := new(bytes.Buffer)
+	json.NewEncoder(buf).Encode(payload)
+	return http.NewRequest(method, fmt.Sprintf("%s%s", c.apiBase, path), buf)
 }
 
 // DoRequest makes a request to the API and unmarshales the response into v.

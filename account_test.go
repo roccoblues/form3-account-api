@@ -3,6 +3,7 @@ package form3
 import (
 	"errors"
 	"net/http"
+	"reflect"
 	"testing"
 
 	"github.com/google/uuid"
@@ -15,7 +16,7 @@ func TestAccountsCrud(t *testing.T) {
 
 	client := newTestClient(t)
 
-	// 404 Not Found
+	// try to fetch account, it should not exist
 	account, err := client.GetAccount(uuid.NewString())
 	if err == nil {
 		t.Fatalf("Client.GetAccount() expected error")
@@ -32,6 +33,30 @@ func TestAccountsCrud(t *testing.T) {
 		t.Fatalf("Client.GetAccount() returned account, expected nil")
 	}
 
-	// Create account
-
+	// create a new account
+	attributes := AccountAttributes{
+		Country:      "GB",
+		BaseCurrency: "GBP",
+		BankID:       "400300",
+		BankIDCode:   "GBDSC",
+		Bic:          "NWBKGB22",
+	}
+	accountID := uuid.NewString()
+	organisationID := uuid.NewString()
+	account, err = client.CreateAccount(accountID, organisationID, attributes)
+	if err != nil {
+		t.Fatalf("Client.GetAccount() returned unexpected error: (%T) %v", err, err)
+	}
+	if account == nil {
+		t.Fatalf("Client.GetAccount() didn't return an account")
+	}
+	if account.ID != accountID {
+		t.Errorf("Client.GetAccount() wrong account id, expected %s, got %s", accountID, account.ID)
+	}
+	if account.OrganisationID != organisationID {
+		t.Errorf("Client.GetAccount() wrong organisation id, expected %s, got %s", organisationID, account.OrganisationID)
+	}
+	if !reflect.DeepEqual(account.Attributes, attributes) {
+		t.Errorf("Client.GetAccount() account attributes don't match. Got: %v, expected: %v", account.Attributes, attributes)
+	}
 }
