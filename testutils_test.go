@@ -1,23 +1,32 @@
 package form3
 
-import "testing"
+import (
+	"os"
+	"testing"
+
+	"github.com/stretchr/testify/require"
+)
+
+const defaultAPIBase = "http://localhost:8080/v1"
 
 func newTestClient(t *testing.T) *Client {
-	client, err := NewClient("http://localhost:8080/v1")
-	if err != nil {
-		t.Fatal(err)
+	apiBase := os.Getenv("API_BASE")
+	if apiBase == "" {
+		apiBase = defaultAPIBase
 	}
 
-	// ensure an empty test setup
-	accounts, err := client.ListAccounts()
-	if err != nil {
-		t.Fatal(err)
-	}
-	for _, a := range accounts {
-		if err := client.DeleteAccount(a.ID, a.Version); err != nil {
-			t.Fatal(err)
-		}
-	}
+	client, err := NewClient(apiBase)
+	require.Nil(t, err)
 
 	return client
+}
+
+func truncateAccounts(client *Client, t *testing.T) {
+	accounts, err := client.ListAccounts()
+	require.Nil(t, err)
+
+	for _, a := range accounts {
+		err := client.DeleteAccount(a.ID, a.Version)
+		require.Nil(t, err)
+	}
 }

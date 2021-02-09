@@ -29,13 +29,13 @@ type HTTPError struct {
 	Response     *http.Response `json:"-"`
 	StatusCode   int            `json:"-"` // convinience accessor for Response.StatusCode
 	Status       string         `json:"-"` // convinience accessor for Response.Status
-	ErrorCode    string         `json:"error_code,omitempty"`
+	ErrorCode    int            `json:"error_code,omitempty"`
 	ErrorMessage string         `json:"error_message,omitempty"`
 }
 
 // Error returns a string representation of the HTTPError.
 func (e *HTTPError) Error() string {
-	return fmt.Sprintf("%d %s: %s %s", e.Response.StatusCode, e.Response.Status, e.ErrorCode, e.ErrorMessage)
+	return fmt.Sprintf("%d %s: %d %s", e.Response.StatusCode, e.Response.Status, e.ErrorCode, e.ErrorMessage)
 }
 
 // NewClient returns a new Client struct.
@@ -108,8 +108,10 @@ func (c *Client) DoRequest(req *http.Request, v interface{}) error {
 	// 400 responses contain additional information
 	if resp.StatusCode == http.StatusBadRequest {
 		data, err := ioutil.ReadAll(resp.Body)
-
-		if err != nil && len(data) > 0 {
+		if err != nil {
+			return err
+		}
+		if len(data) > 0 {
 			if err := json.Unmarshal(data, errResp); err != nil {
 				return err
 			}
