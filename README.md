@@ -26,7 +26,7 @@ client, err := form3.NewClient("http://localhost:8080/v1", options...)
 
 ### Error handling
 
-All API methods return an error in case something went wrong. If the error is based on an HTTP response a `form3.HTTPError` is returned. It contains the actual HTTP response and [additional information](https://api-docs.form3.tech/api.html#introduction-and-api-conventions-errors-and-status-codes) (if provided).
+All API methods return an error in case something went wrong. If the error is based on an HTTP response a `form3.HTTPError` is returned. It contains the actual `http.Response` and [additional information](https://api-docs.form3.tech/api.html#introduction-and-api-conventions-errors-and-status-codes) (if provided).
 
 ```Go
 account, err := client.CreateAccount(id, organisationId, attributes)
