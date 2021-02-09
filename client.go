@@ -23,8 +23,8 @@ type Links struct {
 	Prev  string `json:"prev"`
 }
 
-// ErrorResponse contains additional information about a failed request.
-type ErrorResponse struct {
+// HTTPError contains additional information about a failed http request.
+type HTTPError struct {
 	Response     *http.Response `json:"-"`
 	StatusCode   int            `json:"-"`
 	Status       string         `json:"-"`
@@ -32,8 +32,8 @@ type ErrorResponse struct {
 	ErrorMessage string         `json:"error_message"`
 }
 
-// Error returns a string represantation of the ErrorResponse.
-func (e *ErrorResponse) Error() string {
+// Error returns a string represantation of the HTTPError.
+func (e *HTTPError) Error() string {
 	return fmt.Sprintf("%d %s: %s %s", e.Response.StatusCode, e.Response.Status, e.ErrorCode, e.ErrorMessage)
 }
 
@@ -69,7 +69,7 @@ func (c *Client) DoRequest(req *http.Request, v interface{}) error {
 		return json.NewDecoder(resp.Body).Decode(v)
 	}
 
-	errResp := &ErrorResponse{
+	errResp := &HTTPError{
 		Response:   resp,
 		StatusCode: resp.StatusCode,
 		Status:     resp.Status,
