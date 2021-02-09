@@ -53,10 +53,12 @@ API_BASE="http://somewhere.else" go test
 
 1. I've choosen to write integration tests only. They cover most of the code and all of the happy paths. For a production-ready solution unit tests to cover the error cases could be added.
 
-2. There are some differences in the attributes between the documentation and the fake account implementation (see: https://github.com/form3tech-oss/interview-accountapi/issues/38).
-This API client currently only supports the non-deprecated working fields.
+2. UUIDs are handled as simple strings. I chose to rely on the server to validate the correct format. This makes the client easier to use. Also the underlying format can be changed without breaking the library.
 
-3. Another (known) issue is that the delete endpoint currently always returns 204, even for non-existing accounts. (see: https://github.com/form3tech-oss/interview-accountapi/issues/30)
+3. There are some differences in the attributes between the documentation and the fake account implementation (see: https://github.com/form3tech-oss/interview-accountapi/issues/38).
+This API client currently only supports the non-deprecated working attributes.
+
+4. Another (known) issue is that the delete endpoint currently always returns 204, even for non-existing accounts. (see: https://github.com/form3tech-oss/interview-accountapi/issues/30)
 
 ## Submitted by
 
