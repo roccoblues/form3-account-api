@@ -30,7 +30,7 @@ type AccountAttributes struct {
 	AlternativeNames        []string `json:"alternative_names,omitempty"`
 	AccountClassification   string   `json:"account_classification,omitempty"`
 	JointAccount            string   `json:"joint_account,omitempty"`
-	AccountMatchingOptOut   string   `json:"account_matching_opt_out,omitempty"`
+	AccountMatchingOptOut   bool     `json:"account_matching_opt_out,omitempty"`
 	SecondaryIdentification string   `json:"secondary_identification,omitempty"`
 	Switched                bool     `json:"switched,omitempty"`
 	Status                  string   `json:"status,omitempty"`
@@ -39,6 +39,11 @@ type AccountAttributes struct {
 type accountPayload struct {
 	Data  Account `json:"data"`
 	Links Links   `json:"links,omitempty"`
+}
+
+type accountsPayload struct {
+	Data  []*Account `json:"data"`
+	Links Links      `json:"links,omitempty"`
 }
 
 // GetAccount returns the account for the given ID.
@@ -77,4 +82,18 @@ func (c *Client) CreateAccount(id, organisationID string, attributes AccountAttr
 	}
 
 	return &response.Data, nil
+}
+
+func (c *Client) ListAccounts() ([]*Account, error) {
+	req, err := c.NewRequest(http.MethodGet, fmt.Sprintf("/organisation/accounts"), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	response := &accountsPayload{}
+	if err := c.DoRequest(req, response); err != nil {
+		return nil, err
+	}
+
+	return response.Data, nil
 }

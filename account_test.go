@@ -45,18 +45,27 @@ func TestAccountsCrud(t *testing.T) {
 	organisationID := uuid.NewString()
 	account, err = client.CreateAccount(accountID, organisationID, attributes)
 	if err != nil {
-		t.Fatalf("Client.GetAccount() returned unexpected error: (%T) %v", err, err)
+		t.Fatalf("Client.CreateAccount() returned unexpected error: (%T) %v", err, err)
 	}
 	if account == nil {
-		t.Fatalf("Client.GetAccount() didn't return an account")
+		t.Fatalf("Client.CreateAccount() didn't return an account")
 	}
 	if account.ID != accountID {
-		t.Errorf("Client.GetAccount() wrong account id, expected %s, got %s", accountID, account.ID)
+		t.Errorf("Client.CreateAccount() wrong account id, expected %s, got %s", accountID, account.ID)
 	}
 	if account.OrganisationID != organisationID {
-		t.Errorf("Client.GetAccount() wrong organisation id, expected %s, got %s", organisationID, account.OrganisationID)
+		t.Errorf("Client.CreateAccount() wrong organisation id, expected %s, got %s", organisationID, account.OrganisationID)
 	}
 	if !reflect.DeepEqual(account.Attributes, attributes) {
-		t.Errorf("Client.GetAccount() account attributes don't match. Got: %v, expected: %v", account.Attributes, attributes)
+		t.Errorf("Client.CreateAccount() account attributes don't match. Got: %v, expected: %v", account.Attributes, attributes)
+	}
+
+	// list accounts
+	accounts, err := client.ListAccounts()
+	if err != nil {
+		t.Fatalf("Client.ListAccounts() returned unexpected error: (%T) %v", err, err)
+	}
+	if len(accounts) != 1 {
+		t.Fatalf("Client.ListAccounts() returned wrong number of accounts. Expected 1, got %d", len(accounts))
 	}
 }
