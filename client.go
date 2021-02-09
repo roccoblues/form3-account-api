@@ -62,7 +62,8 @@ func WithHTTPClient(client *http.Client) ClientOption {
 	return func(c *Client) { c.client = client }
 }
 
-// NewRequest returns a http.Request for the given path with apiBase prepended.
+// NewRequest returns a http.Request for the given path.
+// If a payload is provided it will get JSON encoded.
 func (c *Client) NewRequest(method, path string, payload interface{}) (*http.Request, error) {
 	if payload == nil {
 		return http.NewRequest(method, fmt.Sprintf("%s%s", c.apiBase, path), nil)
