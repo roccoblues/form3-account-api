@@ -10,8 +10,8 @@ import (
 
 // Client represents a Form3 REST API Client.
 type Client struct {
-	Client  *http.Client
-	APIBase string
+	client  *http.Client
+	apiBase string
 }
 
 // Links contains links to related endpoints.
@@ -32,21 +32,38 @@ type HTTPError struct {
 	ErrorMessage string         `json:"error_message"`
 }
 
-// Error returns a string represantation of the HTTPError.
+// Error returns a string representation of the HTTPError.
 func (e *HTTPError) Error() string {
 	return fmt.Sprintf("%d %s: %s %s", e.Response.StatusCode, e.Response.Status, e.ErrorCode, e.ErrorMessage)
 }
 
 // NewClient returns a new Client struct.
-func NewClient(APIBase string) (*Client, error) {
-	if APIBase == "" {
-		return nil, errors.New("APIBase is required")
+func NewClient(apiBase string, options ...ClientOption) (*Client, error) {
+	if apiBase == "" {
+		return nil, errors.New("apiBase is required")
 	}
 
-	return &Client{
-		Client:  &http.Client{},
-		APIBase: APIBase,
-	}, nil
+	c := &Client{
+		client:  &http.Client{},
+		apiBase: apiBase,
+	}
+	for _, option := range options {
+		option(c)
+	}
+	return c, nil
+}
+
+// ClientOption sets some additional options on a client.
+type ClientOption func(*Client)
+
+// WithHTTPClient sets the http client used to make the actual requests.
+func WithHTTPClient(client *http.Client) ClientOption {
+	return func(c *Client) { c.client = client }
+}
+
+// NewRequest returns a http.Request for the given path with apiBase prepended.
+func (c *Client) NewRequest(method, path string, payload interface{}) (*http.Request, error) {
+	return http.NewRequest(method, fmt.Sprintf("%s%s", c.apiBase, path), nil)
 }
 
 // DoRequest makes a request to the API and unmarshales the response into v.
@@ -57,7 +74,7 @@ func (c *Client) DoRequest(req *http.Request, v interface{}) error {
 		req.Header.Set("Content-Type", "application/vnd.api+json")
 	}
 
-	resp, err := c.Client.Do(req)
+	resp, err := c.client.Do(req)
 
 	if err != nil {
 		return err

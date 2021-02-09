@@ -40,7 +40,7 @@ type accountResponse struct {
 
 // GetAccount returns the account for the given ID.
 func (c *Client) GetAccount(id string) (*Account, error) {
-	req, err := http.NewRequest(http.MethodGet, fmt.Sprintf("%s/organisation/accounts/%s", c.APIBase, id), nil)
+	req, err := c.NewRequest(http.MethodGet, fmt.Sprintf("/organisation/accounts/%s", id), nil)
 	if err != nil {
 		return nil, err
 	}
