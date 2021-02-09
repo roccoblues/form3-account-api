@@ -98,3 +98,13 @@ func (c *Client) ListAccounts() ([]*Account, error) {
 
 	return response.Data, nil
 }
+
+// DeleteAccount deletes the account with the given ID and version.
+func (c *Client) DeleteAccount(id string, version int) error {
+	req, err := c.NewRequest(http.MethodDelete, fmt.Sprintf("/organisation/accounts/%s?version=%d", id, version), nil)
+	if err != nil {
+		return err
+	}
+
+	return c.DoRequest(req, nil)
+}

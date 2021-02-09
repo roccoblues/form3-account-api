@@ -66,6 +66,6 @@ func TestAccountsCrud(t *testing.T) {
 		t.Fatalf("Client.ListAccounts() returned unexpected error: (%T) %v", err, err)
 	}
 	if len(accounts) != 1 {
-		t.Fatalf("Client.ListAccounts() returned wrong number of accounts. Expected 1, got %d", len(accounts))
+		t.Errorf("Client.ListAccounts() returned wrong number of accounts. Expected 1, got %d", len(accounts))
 	}
 }

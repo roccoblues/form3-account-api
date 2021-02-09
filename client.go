@@ -27,8 +27,8 @@ type Links struct {
 // HTTPError contains additional information about a failed http request.
 type HTTPError struct {
 	Response     *http.Response `json:"-"`
-	StatusCode   int            `json:"-"`
-	Status       string         `json:"-"`
+	StatusCode   int            `json:"-"` // convinience accessor for Response.StatusCode
+	Status       string         `json:"-"` // convinience accessor for Response.Status
 	ErrorCode    string         `json:"error_code,omitempty"`
 	ErrorMessage string         `json:"error_message,omitempty"`
 }
@@ -87,6 +87,11 @@ func (c *Client) DoRequest(req *http.Request, v interface{}) error {
 		return err
 	}
 	defer resp.Body.Close()
+
+	// successful delete requests have no return value
+	if req.Method == http.MethodDelete && resp.StatusCode == http.StatusNoContent {
+		return nil
+	}
 
 	// only 200 and 201 responses contain a body that can be unmashalled into v
 	if resp.StatusCode == http.StatusOK || resp.StatusCode == http.StatusCreated {
