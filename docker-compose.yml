@@ -1,6 +1,16 @@
 version: '3'
 
 services:
+  accountapi_client:
+    build:
+      context: .
+      dockerfile: ./Dockerfile.test
+    depends_on:
+      - accountapi
+    environment:
+      - API_BASE=http://accountapi:8080/v1
+    volumes:
+      - $PWD:/go/src/github.com/roccoblues/form3-account-api
   accountapi:
     image: form3tech/interview-accountapi:v1.0.0-4-g63cf8434
     restart: on-failure
@@ -34,7 +44,6 @@ services:
       - POSTGRES_PASSWORD=password
     volumes:
       - ./scripts/db:/docker-entrypoint-initdb.d/
-
   vault:
     image: vault:0.9.3
     environment:
