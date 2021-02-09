@@ -84,6 +84,7 @@ func (c *Client) CreateAccount(id, organisationID string, attributes AccountAttr
 	return &response.Data, nil
 }
 
+// ListAccounts returns all accounts.
 func (c *Client) ListAccounts() ([]*Account, error) {
 	req, err := c.NewRequest(http.MethodGet, fmt.Sprintf("/organisation/accounts"), nil)
 	if err != nil {
