@@ -56,7 +56,7 @@ API_BASE="http://somewhere.else" go test
 2. There are some differences in the attributes between the documentation and the fake account implementation (see: https://github.com/form3tech-oss/interview-accountapi/issues/38).
 This API client currently only supports the non-deprecated working fields.
 
-3. Another (known) issue is that the delete endpoint currently always returns 204, also for non-existing accounts. (see: https://github.com/form3tech-oss/interview-accountapi/issues/30)
+3. Another (known) issue is that the delete endpoint currently always returns 204, even for non-existing accounts. (see: https://github.com/form3tech-oss/interview-accountapi/issues/30)
 
 ## Submitted by
 

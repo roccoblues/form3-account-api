@@ -237,3 +237,47 @@ func TestClient_GetAccount(t *testing.T) {
 		})
 	}
 }
+
+func TestClient_ListAccounts(t *testing.T) {
+	assert := assert.New(t)
+
+	client := newTestClient(t)
+	truncateAccounts(client, t)
+
+	testAccount1, err := client.CreateAccount(uuid.NewString(), uuid.NewString(), &testAccountAttributes)
+	require.Nil(t, err)
+
+	testAccount2, err := client.CreateAccount(uuid.NewString(), uuid.NewString(), &testAccountAttributes)
+	require.Nil(t, err)
+
+	tests := []struct {
+		name string
+		want []*Account
+	}{
+		{
+			name: "fetch all accounts",
+			want: []*Account{
+				testAccount1,
+				testAccount2,
+			},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			accounts, _ := client.ListAccounts()
+			require.Equal(t, len(accounts), len(tt.want))
+
+			for i, a := range tt.want {
+				b := accounts[i]
+
+				assert.Equal(a.ID, b.ID)
+				assert.Equal(a.OrganisationID, b.OrganisationID)
+				assert.Equal(a.Version, b.Version)
+
+				if diff := deep.Equal(a.Attributes, b.Attributes); diff != nil {
+					t.Error(diff)
+				}
+			}
+		})
+	}
+}
