@@ -51,7 +51,7 @@ API_BASE="http://somewhere.else" go test
 
 ## Development Notes
 
-1. I've choosen to write integration tests only. They cover most of the code paths and all of the happy paths. For a production-ready solution unit tests to cover the error cases could be added.
+1. I've choosen to write integration tests only. They cover most of the code and all of the happy paths. For a production-ready solution unit tests to cover the error cases could be added.
 
 2. There are some differences in the attributes between the documentation and the fake account implementation (see: https://github.com/form3tech-oss/interview-accountapi/issues/38).
 This API client currently only supports the non-deprecated working fields.
