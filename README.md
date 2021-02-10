@@ -12,7 +12,17 @@ import "github.com/roccoblues/form3-account-api"
 
 func main() {
   client, err := form3.NewClient("http://localhost:8080/v1")
-  ...
+
+  // Create
+  account, err := client.CreateAccount(id, organisationID, attributes)
+
+  // Fetch
+  account, err := client.GetAccount(id)
+
+  // Delete
+  err := client.DeleteAccount(id)
+
+  // List
 }
 ```
 
