@@ -5,7 +5,10 @@ This repository contains a client for the Form3 fake account API.
 ## Usage
 
 ```Go
-import "github.com/roccoblues/form3-account-api"
+import (
+  "github.com/google/uuid"
+  "github.com/roccoblues/form3-account-api"
+)
 
 func main() {
   // error handling has been omitted for brevity.
@@ -13,13 +16,13 @@ func main() {
   client, err := form3.NewClient("http://localhost:8080")
 
   // Create
-  account, err := client.CreateAccount(id, organisationID, attributes)
+  account, err := client.CreateAccount(uuid.NewString(), organisationID, attributes)
 
   // Fetch
   account, err := client.GetAccount(id)
 
   // Delete
-  err := client.DeleteAccount(id)
+  err := client.DeleteAccount(id, version)
 
   // List
   res := client.ListAccounts(nil)
@@ -32,14 +35,14 @@ func main() {
 The `http.Client` used to make the actual HTTP requests can be changed. It just needs to fullfil the `form3.HTTPClient` interface.
 
 ```Go
-httpClient := &http.Client{Timeout: 10}
+httpClient := &http.Client{Timeout: time.Second * 10}
 options := []form3.ClientOption{form3.WithHTTPClient(httpClient)}
 client, err := form3.NewClient("http://localhost:8080", options...)
 ```
 
 ### Error handling
 
-All API methods return an error in case something went wrong. If the error is based on an HTTP response a `form3.HTTPError` is returned. It contains the actual `http.Response` and [additional information](https://api-docs.form3.tech/api.html#introduction-and-api-conventions-errors-and-status-codes) (if provided).
+All API methods return an error in case something went wrong. If the error is based on an HTTP response a `form3.HTTPError` is returned. It contains the actual `http.Response` and [additional information](https://api-docs.form3.tech/api.html#introduction-and-api-conventions-errors-and-status-codes) if provided.
 
 ```Go
 account, err := client.CreateAccount(id, organisationId, attributes)
