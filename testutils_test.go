@@ -22,7 +22,7 @@ func newTestClient(t *testing.T) *Client {
 }
 
 func truncateAccounts(client *Client, t *testing.T) {
-	accounts, err := client.ListAccounts()
+	accounts, err := client.ListAccounts(&ListAccountsParams{PageSize: 9999})
 	require.Nil(t, err)
 
 	for _, a := range accounts {

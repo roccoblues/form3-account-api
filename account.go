@@ -40,6 +40,12 @@ type AccountAttributes struct {
 	Status string `json:"status,omitempty"`
 }
 
+// ListAccountsParams contains parameters to customize the ListAccounts call.
+type ListAccountsParams struct {
+	PageNumber int
+	PageSize   int
+}
+
 type accountPayload struct {
 	Data  Account `json:"data"`
 	Links Links   `json:"links,omitempty"`
@@ -88,9 +94,13 @@ func (c *Client) CreateAccount(id, organisationID string, attributes *AccountAtt
 	return &response.Data, nil
 }
 
-// ListAccounts returns all accounts.
-func (c *Client) ListAccounts() ([]*Account, error) {
-	req, err := c.NewRequest(http.MethodGet, fmt.Sprintf("/organisation/accounts"), nil)
+// ListAccounts fetches accounts.
+func (c *Client) ListAccounts(params *ListAccountsParams) ([]*Account, error) {
+	path := fmt.Sprintf("/organisation/accounts")
+	if params != nil {
+		path = fmt.Sprintf("%s?page[number]=%d&page[size]=%d", path, params.PageNumber, params.PageSize)
+	}
+	req, err := c.NewRequest(http.MethodGet, path, nil)
 	if err != nil {
 		return nil, err
 	}

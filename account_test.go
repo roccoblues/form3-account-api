@@ -251,8 +251,9 @@ func TestClient_ListAccounts(t *testing.T) {
 	require.Nil(t, err)
 
 	tests := []struct {
-		name string
-		want []*Account
+		name   string
+		want   []*Account
+		params *ListAccountsParams
 	}{
 		{
 			name: "fetch all accounts",
@@ -261,10 +262,20 @@ func TestClient_ListAccounts(t *testing.T) {
 				testAccount2,
 			},
 		},
+		{
+			name:   "paginate accounts (first page)",
+			params: &ListAccountsParams{PageNumber: 0, PageSize: 1},
+			want:   []*Account{testAccount1},
+		},
+		{
+			name:   "paginate accounts (second page)",
+			params: &ListAccountsParams{PageNumber: 1, PageSize: 1},
+			want:   []*Account{testAccount2},
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			accounts, _ := client.ListAccounts()
+			accounts, _ := client.ListAccounts(tt.params)
 			require.Equal(t, len(accounts), len(tt.want))
 
 			for i, a := range tt.want {
