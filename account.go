@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"net/http"
 	"time"
+
+	"github.com/google/uuid"
 )
 
 // Account represents a bank account that is registered with Form3.
@@ -82,10 +84,10 @@ func (c *Client) GetAccount(id string) (*Account, error) {
 }
 
 // CreateAccount creates an account with the given attributes.
-func (c *Client) CreateAccount(id, organisationID string, attributes *AccountAttributes) (*Account, error) {
+func (c *Client) CreateAccount(organisationID string, attributes *AccountAttributes) (*Account, error) {
 	payload := &accountPayload{
 		Data: Account{
-			ID:             id,
+			ID:             uuid.NewString(),
 			OrganisationID: organisationID,
 			Type:           "accounts",
 			Attributes:     attributes,

@@ -10,7 +10,6 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-var testAccountID = uuid.NewString()
 var testOrganisationID = uuid.NewString()
 var testAccountAttributes = AccountAttributes{
 	Country:                 "DE",
@@ -34,7 +33,6 @@ func TestClient_CreateAccount(t *testing.T) {
 
 	tests := []struct {
 		name              string
-		id                string
 		organisationID    string
 		attributes        *AccountAttributes
 		want              *Account
@@ -46,7 +44,6 @@ func TestClient_CreateAccount(t *testing.T) {
 	}{
 		{
 			name:              "empty attributes",
-			id:                testAccountID,
 			organisationID:    testOrganisationID,
 			wantErr:           true,
 			wantHTTPErr:       true,
@@ -56,30 +53,17 @@ func TestClient_CreateAccount(t *testing.T) {
 		},
 		{
 			name:           "full attributes",
-			id:             testAccountID,
 			organisationID: testOrganisationID,
 			attributes:     &testAccountAttributes,
 			want: &Account{
-				ID:             testAccountID,
 				OrganisationID: testOrganisationID,
 				Attributes:     &testAccountAttributes,
 			},
 		},
-		{
-			name:              "duplicate account id",
-			id:                testAccountID,
-			organisationID:    uuid.NewString(),
-			attributes:        &testAccountAttributes,
-			wantErr:           true,
-			wantHTTPErr:       true,
-			httpErrStatusCode: 409,
-			httpErrCode:       0,
-			httpErrMessage:    "",
-		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			account, err := client.CreateAccount(tt.id, tt.organisationID, tt.attributes)
+			account, err := client.CreateAccount(tt.organisationID, tt.attributes)
 
 			if (err != nil) != tt.wantErr {
 				t.Errorf("Client.CreateAccount() error = %v, wantErr %v", err, tt.wantErr)
@@ -101,7 +85,7 @@ func TestClient_CreateAccount(t *testing.T) {
 				return
 			}
 
-			assert.Equal(account.ID, tt.id)
+			assert.NotEmpty(account.ID)
 			assert.Equal(account.OrganisationID, tt.organisationID)
 			assert.Equal(account.Version, tt.want.Version)
 			assert.False(account.CreatedOn.IsZero())
@@ -118,7 +102,7 @@ func TestClient_DeleteAccount(t *testing.T) {
 	client := newTestClient(t)
 	truncateAccounts(client, t)
 
-	account, err := client.CreateAccount(testAccountID, testOrganisationID, &testAccountAttributes)
+	account, err := client.CreateAccount(testOrganisationID, &testAccountAttributes)
 	require.Nil(t, err)
 
 	tests := []struct {
@@ -176,7 +160,7 @@ func TestClient_GetAccount(t *testing.T) {
 	client := newTestClient(t)
 	truncateAccounts(client, t)
 
-	testAccount, err := client.CreateAccount(testAccountID, testOrganisationID, &testAccountAttributes)
+	testAccount, err := client.CreateAccount(testOrganisationID, &testAccountAttributes)
 	require.Nil(t, err)
 
 	assert := assert.New(t)
@@ -244,10 +228,10 @@ func TestClient_ListAccounts(t *testing.T) {
 	client := newTestClient(t)
 	truncateAccounts(client, t)
 
-	testAccount1, err := client.CreateAccount(uuid.NewString(), uuid.NewString(), &testAccountAttributes)
+	testAccount1, err := client.CreateAccount(testOrganisationID, &testAccountAttributes)
 	require.Nil(t, err)
 
-	testAccount2, err := client.CreateAccount(uuid.NewString(), uuid.NewString(), &testAccountAttributes)
+	testAccount2, err := client.CreateAccount(testOrganisationID, &testAccountAttributes)
 	require.Nil(t, err)
 
 	tests := []struct {
@@ -299,11 +283,11 @@ func TestClient_PaginateAccounts(t *testing.T) {
 	client := newTestClient(t)
 	truncateAccounts(client, t)
 
-	testAccount1, err := client.CreateAccount(uuid.NewString(), uuid.NewString(), &testAccountAttributes)
+	testAccount1, err := client.CreateAccount(testOrganisationID, &testAccountAttributes)
 	require.Nil(t, err)
-	testAccount2, err := client.CreateAccount(uuid.NewString(), uuid.NewString(), &testAccountAttributes)
+	testAccount2, err := client.CreateAccount(testOrganisationID, &testAccountAttributes)
 	require.Nil(t, err)
-	testAccount3, err := client.CreateAccount(uuid.NewString(), uuid.NewString(), &testAccountAttributes)
+	testAccount3, err := client.CreateAccount(testOrganisationID, &testAccountAttributes)
 	require.Nil(t, err)
 
 	expected := []*Account{testAccount1, testAccount2, testAccount3}

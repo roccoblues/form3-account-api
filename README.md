@@ -5,10 +5,7 @@ This repository contains a client for the Form3 fake account API.
 ## Usage
 
 ```Go
-import (
-  "github.com/google/uuid"
-  "github.com/roccoblues/form3-account-api"
-)
+import "github.com/roccoblues/form3-account-api"
 
 func main() {
   // error handling has been omitted for brevity.
@@ -16,7 +13,7 @@ func main() {
   client, err := form3.NewClient("http://localhost:8080")
 
   // Create
-  account, err := client.CreateAccount(uuid.NewString(), organisationID, attributes)
+  account, err := client.CreateAccount(organisationID, attributes)
 
   // Fetch
   account, err := client.GetAccount(id)
@@ -69,7 +66,7 @@ API_BASE="http://somewhere.else" go test
 
 1. I've chosen to write integration tests only. They cover most of the code and all of the happy paths. For a production-ready solution unit tests to cover the error cases could be added.
 
-2. UUIDs are handled as simple strings. I chose to rely on the server to validate the correct format. This makes the client easier to use. Also the underlying format can be changed without breaking the library.
+2. UUIDs are handled as simple strings. I chose to rely on the server to validate the correct format. This makes the client easier to use. Also the underlying format can be changed without changing the library interface.
 
 3. There are some differences in the attributes between the documentation and the fake account implementation (see: https://github.com/form3tech-oss/interview-accountapi/issues/38).
 This API client currently only supports the non-deprecated working attributes.
