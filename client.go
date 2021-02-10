@@ -11,8 +11,8 @@ import (
 
 // Client represents a Form3 REST API Client.
 type Client struct {
-	client  HTTPClient
-	baseURL string
+	httpClient HTTPClient
+	baseURL    string
 }
 
 // HTTPClient models the http client interface.
@@ -50,8 +50,8 @@ func NewClient(baseURL string, options ...ClientOption) (*Client, error) {
 	}
 
 	c := &Client{
-		client:  &http.Client{},
-		baseURL: baseURL,
+		httpClient: &http.Client{},
+		baseURL:    baseURL,
 	}
 	for _, option := range options {
 		option(c)
@@ -64,7 +64,7 @@ type ClientOption func(*Client)
 
 // WithHTTPClient sets the http client used to make the actual requests.
 func WithHTTPClient(httpClient HTTPClient) ClientOption {
-	return func(c *Client) { c.client = httpClient }
+	return func(c *Client) { c.httpClient = httpClient }
 }
 
 // NewRequest returns a http.Request for the given path.
@@ -87,7 +87,7 @@ func (c *Client) DoRequest(req *http.Request, v interface{}) error {
 		req.Header.Set("Content-Type", "application/vnd.api+json")
 	}
 
-	resp, err := c.client.Do(req)
+	resp, err := c.httpClient.Do(req)
 	if err != nil {
 		return err
 	}
