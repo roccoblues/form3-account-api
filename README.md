@@ -4,9 +4,6 @@ This repository contains a client for the Form3 fake account API.
 
 ## Usage
 
-
-### Initialize a Client
-
 ```Go
 import "github.com/roccoblues/form3-account-api"
 
@@ -30,7 +27,7 @@ The `http.Client` used to make the actual HTTP requests can be changed. It just 
 
 ```Go
 httpClient := &http.Client{Timeout: 10}
-options := []form3.ClientOption(form3.WithHTTPClient(httpClient))
+options := []form3.ClientOption{form3.WithHTTPClient(httpClient)}
 client, err := form3.NewClient("http://localhost:8080/v1", options...)
 ```
 
