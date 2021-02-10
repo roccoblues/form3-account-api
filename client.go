@@ -12,7 +12,7 @@ import (
 // Client represents a Form3 REST API Client.
 type Client struct {
 	client  *http.Client
-	apiBase string
+	baseURL string
 }
 
 // Links contains links to related endpoints.
@@ -39,14 +39,14 @@ func (e *HTTPError) Error() string {
 }
 
 // NewClient returns a new Client struct.
-func NewClient(apiBase string, options ...ClientOption) (*Client, error) {
-	if apiBase == "" {
-		return nil, errors.New("apiBase is required")
+func NewClient(baseURL string, options ...ClientOption) (*Client, error) {
+	if baseURL == "" {
+		return nil, errors.New("baseURL is required")
 	}
 
 	c := &Client{
 		client:  &http.Client{},
-		apiBase: apiBase,
+		baseURL: baseURL,
 	}
 	for _, option := range options {
 		option(c)
@@ -66,12 +66,12 @@ func WithHTTPClient(client *http.Client) ClientOption {
 // If a payload is provided it will get JSON encoded.
 func (c *Client) NewRequest(method, path string, payload interface{}) (*http.Request, error) {
 	if payload == nil {
-		return http.NewRequest(method, fmt.Sprintf("%s%s", c.apiBase, path), nil)
+		return http.NewRequest(method, fmt.Sprintf("%s%s", c.baseURL, path), nil)
 	}
 
 	buf := new(bytes.Buffer)
 	json.NewEncoder(buf).Encode(payload)
-	return http.NewRequest(method, fmt.Sprintf("%s%s", c.apiBase, path), buf)
+	return http.NewRequest(method, fmt.Sprintf("%s%s", c.baseURL, path), buf)
 }
 
 // DoRequest makes a request to the API and unmarshales the response into v.

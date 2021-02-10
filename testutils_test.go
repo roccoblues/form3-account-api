@@ -7,15 +7,15 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-const defaultAPIBase = "http://localhost:8080/v1"
+const defaultBaseURL = "http://localhost:8080/v1"
 
 func newTestClient(t *testing.T) *Client {
-	apiBase := os.Getenv("API_BASE")
-	if apiBase == "" {
-		apiBase = defaultAPIBase
+	baseURL := os.Getenv("API_BASE")
+	if baseURL == "" {
+		baseURL = defaultBaseURL
 	}
 
-	client, err := NewClient(apiBase)
+	client, err := NewClient(baseURL)
 	require.Nil(t, err)
 
 	return client
