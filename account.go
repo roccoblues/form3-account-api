@@ -46,6 +46,15 @@ type ListAccountsParams struct {
 	PageSize   int
 }
 
+// ListAccountsResponse is returned as a result of a ListAccounts call.
+type ListAccountsResponse struct {
+	payload *accountsPayload
+	params  *ListAccountsParams
+}
+
+// DefaultAccountsPageSize specifies the default number of results per page.
+const DefaultAccountsPageSize = 100
+
 type accountPayload struct {
 	Data  Account `json:"data"`
 	Links Links   `json:"links,omitempty"`
@@ -94,25 +103,6 @@ func (c *Client) CreateAccount(id, organisationID string, attributes *AccountAtt
 	return &response.Data, nil
 }
 
-// ListAccounts fetches accounts.
-func (c *Client) ListAccounts(params *ListAccountsParams) ([]*Account, error) {
-	path := fmt.Sprintf("/organisation/accounts")
-	if params != nil {
-		path = fmt.Sprintf("%s?page[number]=%d&page[size]=%d", path, params.PageNumber, params.PageSize)
-	}
-	req, err := c.NewRequest(http.MethodGet, path, nil)
-	if err != nil {
-		return nil, err
-	}
-
-	response := &accountsPayload{}
-	if err := c.DoRequest(req, response); err != nil {
-		return nil, err
-	}
-
-	return response.Data, nil
-}
-
 // DeleteAccount deletes the account with the given ID and version.
 func (c *Client) DeleteAccount(id string, version int) error {
 	req, err := c.NewRequest(http.MethodDelete, fmt.Sprintf("/organisation/accounts/%s?version=%d", id, version), nil)
@@ -121,4 +111,53 @@ func (c *Client) DeleteAccount(id string, version int) error {
 	}
 
 	return c.DoRequest(req, nil)
+}
+
+// ListAccounts fetches accounts.
+func (c *Client) ListAccounts(params *ListAccountsParams) (*ListAccountsResponse, error) {
+	if params == nil {
+		params = &ListAccountsParams{
+			PageNumber: 0,
+			PageSize:   DefaultAccountsPageSize,
+		}
+	}
+	path := fmt.Sprintf("/organisation/accounts?page[number]=%d&page[size]=%d", params.PageNumber, params.PageSize)
+	req, err := c.NewRequest(http.MethodGet, path, nil)
+	if err != nil {
+		return nil, err
+	}
+
+	result := &accountsPayload{}
+	if err := c.DoRequest(req, result); err != nil {
+		return nil, err
+	}
+
+	response := ListAccountsResponse{
+		payload: result,
+		params:  params,
+	}
+
+	return &response, nil
+}
+
+// Accounts returns the actual accounts in the response.
+func (ar *ListAccountsResponse) Accounts() []*Account {
+	return ar.payload.Data
+}
+
+// HasNext returns true if the result is paginated and has a next page.
+func (ar *ListAccountsResponse) HasNext() bool {
+	return ar.payload.Links.Next != ""
+}
+
+// NextParams returns the params for ListAccounts() to fetch the next results page.
+func (ar *ListAccountsResponse) NextParams() *ListAccountsParams {
+	if !ar.HasNext() {
+		return nil
+	}
+
+	return &ListAccountsParams{
+		PageSize:   ar.params.PageSize,
+		PageNumber: ar.params.PageNumber + 1,
+	}
 }

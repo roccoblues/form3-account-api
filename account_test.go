@@ -251,34 +251,41 @@ func TestClient_ListAccounts(t *testing.T) {
 	require.Nil(t, err)
 
 	tests := []struct {
-		name   string
-		want   []*Account
-		params *ListAccountsParams
+		name           string
+		params         *ListAccountsParams
+		wantAccounts   []*Account
+		wantHasNext    bool
+		wantNextParams *ListAccountsParams
 	}{
 		{
 			name: "fetch all accounts",
-			want: []*Account{
+			wantAccounts: []*Account{
 				testAccount1,
 				testAccount2,
 			},
 		},
 		{
-			name:   "paginate accounts (first page)",
-			params: &ListAccountsParams{PageNumber: 0, PageSize: 1},
-			want:   []*Account{testAccount1},
+			name:           "paginate accounts (first page)",
+			params:         &ListAccountsParams{PageNumber: 0, PageSize: 1},
+			wantAccounts:   []*Account{testAccount1},
+			wantHasNext:    true,
+			wantNextParams: &ListAccountsParams{PageNumber: 1, PageSize: 1},
 		},
 		{
-			name:   "paginate accounts (second page)",
-			params: &ListAccountsParams{PageNumber: 1, PageSize: 1},
-			want:   []*Account{testAccount2},
+			name:         "paginate accounts (second page)",
+			params:       &ListAccountsParams{PageNumber: 1, PageSize: 1},
+			wantAccounts: []*Account{testAccount2},
+			wantHasNext:  false,
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			accounts, _ := client.ListAccounts(tt.params)
-			require.Equal(t, len(accounts), len(tt.want))
+			resp, _ := client.ListAccounts(tt.params)
 
-			for i, a := range tt.want {
+			accounts := resp.Accounts()
+			require.Equal(t, len(accounts), len(tt.wantAccounts))
+
+			for i, a := range tt.wantAccounts {
 				b := accounts[i]
 
 				assert.Equal(a.ID, b.ID)
@@ -289,6 +296,36 @@ func TestClient_ListAccounts(t *testing.T) {
 					t.Error(diff)
 				}
 			}
+
+			assert.Equal(tt.wantHasNext, resp.HasNext())
+			if diff := deep.Equal(tt.wantNextParams, resp.NextParams()); diff != nil {
+				t.Error(diff)
+			}
 		})
+	}
+}
+
+func TestClient_PaginateAccounts(t *testing.T) {
+	client := newTestClient(t)
+	truncateAccounts(client, t)
+
+	testAccount1, err := client.CreateAccount(uuid.NewString(), uuid.NewString(), &testAccountAttributes)
+	require.Nil(t, err)
+	testAccount2, err := client.CreateAccount(uuid.NewString(), uuid.NewString(), &testAccountAttributes)
+	require.Nil(t, err)
+	testAccount3, err := client.CreateAccount(uuid.NewString(), uuid.NewString(), &testAccountAttributes)
+	require.Nil(t, err)
+
+	expected := []*Account{testAccount1, testAccount2, testAccount3}
+
+	resp, err := client.ListAccounts(&ListAccountsParams{PageSize: 2})
+	accounts := resp.Accounts()
+	for resp.HasNext() {
+		resp, err = client.ListAccounts(resp.NextParams())
+		accounts = append(accounts, resp.Accounts()...)
+	}
+
+	if diff := deep.Equal(expected, accounts); diff != nil {
+		t.Error(diff)
 	}
 }

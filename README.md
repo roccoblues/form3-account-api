@@ -8,6 +8,8 @@ This repository contains a client for the Form3 fake account API.
 import "github.com/roccoblues/form3-account-api"
 
 func main() {
+  // error handling has been omitted for brevity.
+
   client, err := form3.NewClient("http://localhost:8080/v1")
 
   // Create
@@ -20,6 +22,12 @@ func main() {
   err := client.DeleteAccount(id)
 
   // List
+  resp, err := client.ListAccounts()
+  accounts := resp.Accounts()
+  for resp.HasNext() {
+    resp, err = client.ListAccounts(resp.NextParams())
+    accounts = append(accounts, resp.Accounts()...)
+  }
 }
 ```
 
