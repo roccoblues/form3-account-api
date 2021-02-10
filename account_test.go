@@ -251,41 +251,36 @@ func TestClient_ListAccounts(t *testing.T) {
 	require.Nil(t, err)
 
 	tests := []struct {
-		name           string
-		params         *ListAccountsParams
-		wantAccounts   []*Account
-		wantHasNext    bool
-		wantNextParams *ListAccountsParams
+		name   string
+		params *ListAccountsParams
+		want   []*Account
 	}{
 		{
-			name: "fetch all accounts",
-			wantAccounts: []*Account{
-				testAccount1,
-				testAccount2,
-			},
+			name:   "fetch all accounts",
+			params: &ListAccountsParams{PageNumber: 0, PageSize: 999},
+			want:   []*Account{testAccount1, testAccount2},
 		},
 		{
-			name:           "paginate accounts (first page)",
-			params:         &ListAccountsParams{PageNumber: 0, PageSize: 1},
-			wantAccounts:   []*Account{testAccount1},
-			wantHasNext:    true,
-			wantNextParams: &ListAccountsParams{PageNumber: 1, PageSize: 1},
+			name:   "paginate accounts (first page)",
+			params: &ListAccountsParams{PageNumber: 0, PageSize: 1},
+			want:   []*Account{testAccount1},
 		},
 		{
-			name:         "paginate accounts (second page)",
-			params:       &ListAccountsParams{PageNumber: 1, PageSize: 1},
-			wantAccounts: []*Account{testAccount2},
-			wantHasNext:  false,
+			name:   "paginate accounts (second page)",
+			params: &ListAccountsParams{PageNumber: 1, PageSize: 1},
+			want:   []*Account{testAccount2},
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			resp, _ := client.ListAccounts(tt.params)
+			res := client.ListAccounts(tt.params)
+			res.NextPage()
+			accounts, err := res.Accounts()
+			require.Nil(t, err)
 
-			accounts := resp.Accounts()
-			require.Equal(t, len(accounts), len(tt.wantAccounts))
+			require.Equal(t, len(accounts), len(tt.want))
 
-			for i, a := range tt.wantAccounts {
+			for i, a := range tt.want {
 				b := accounts[i]
 
 				assert.Equal(a.ID, b.ID)
@@ -295,11 +290,6 @@ func TestClient_ListAccounts(t *testing.T) {
 				if diff := deep.Equal(a.Attributes, b.Attributes); diff != nil {
 					t.Error(diff)
 				}
-			}
-
-			assert.Equal(tt.wantHasNext, resp.HasNext())
-			if diff := deep.Equal(tt.wantNextParams, resp.NextParams()); diff != nil {
-				t.Error(diff)
 			}
 		})
 	}
@@ -318,11 +308,12 @@ func TestClient_PaginateAccounts(t *testing.T) {
 
 	expected := []*Account{testAccount1, testAccount2, testAccount3}
 
-	resp, err := client.ListAccounts(&ListAccountsParams{PageSize: 2})
-	accounts := resp.Accounts()
-	for resp.HasNext() {
-		resp, err = client.ListAccounts(resp.NextParams())
-		accounts = append(accounts, resp.Accounts()...)
+	var accounts []*Account
+	res := client.ListAccounts(&ListAccountsParams{PageSize: 2})
+	for res.NextPage() {
+		result, err := res.Accounts()
+		require.Nil(t, err)
+		accounts = append(accounts, result...)
 	}
 
 	if diff := deep.Equal(expected, accounts); diff != nil {

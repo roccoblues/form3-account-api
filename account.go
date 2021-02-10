@@ -46,8 +46,9 @@ type ListAccountsParams struct {
 	PageSize   int
 }
 
-// ListAccountsResponse is returned as a result of a ListAccounts call.
-type ListAccountsResponse struct {
+// AccountsIterator is used to iterate over accounts result pages.
+type AccountsIterator struct {
+	client  *Client
 	payload *accountsPayload
 	params  *ListAccountsParams
 }
@@ -113,51 +114,49 @@ func (c *Client) DeleteAccount(id string, version int) error {
 	return c.DoRequest(req, nil)
 }
 
-// ListAccounts fetches accounts.
-func (c *Client) ListAccounts(params *ListAccountsParams) (*ListAccountsResponse, error) {
+// ListAccounts returns an iterator to fetch accounts.
+func (c *Client) ListAccounts(params *ListAccountsParams) *AccountsIterator {
 	if params == nil {
 		params = &ListAccountsParams{
 			PageNumber: 0,
 			PageSize:   DefaultAccountsPageSize,
 		}
 	}
-	path := fmt.Sprintf("/organisation/accounts?page[number]=%d&page[size]=%d", params.PageNumber, params.PageSize)
-	req, err := c.NewRequest(http.MethodGet, path, nil)
+
+	return &AccountsIterator{
+		client: c,
+		params: params,
+	}
+}
+
+// Accounts returns the accounts for the current page.
+func (ar *AccountsIterator) Accounts() ([]*Account, error) {
+	path := fmt.Sprintf("/organisation/accounts?page[number]=%d&page[size]=%d", ar.params.PageNumber, ar.params.PageSize)
+	req, err := ar.client.NewRequest(http.MethodGet, path, nil)
 	if err != nil {
 		return nil, err
 	}
 
 	result := &accountsPayload{}
-	if err := c.DoRequest(req, result); err != nil {
+	if err := ar.client.DoRequest(req, result); err != nil {
 		return nil, err
 	}
 
-	response := ListAccountsResponse{
-		payload: result,
-		params:  params,
-	}
+	ar.payload = result
 
-	return &response, nil
+	return result.Data, nil
 }
 
-// Accounts returns the actual accounts in the response.
-func (ar *ListAccountsResponse) Accounts() []*Account {
-	return ar.payload.Data
-}
-
-// HasNext returns true if the result is paginated and has a next page.
-func (ar *ListAccountsResponse) HasNext() bool {
-	return ar.payload.Links.Next != ""
-}
-
-// NextParams returns the params for ListAccounts() to fetch the next results page.
-func (ar *ListAccountsResponse) NextParams() *ListAccountsParams {
-	if !ar.HasNext() {
-		return nil
+// NextPage advances the iterator and returns true if there are more results.
+func (ar *AccountsIterator) NextPage() bool {
+	if ar.payload != nil && ar.payload.Links.Next == "" {
+		return false
 	}
 
-	return &ListAccountsParams{
-		PageSize:   ar.params.PageSize,
-		PageNumber: ar.params.PageNumber + 1,
+	// only advance page after the first fetch, otherwise we'll skip the first page
+	if ar.payload != nil {
+		ar.params.PageNumber++
 	}
+
+	return true
 }

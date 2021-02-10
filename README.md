@@ -22,11 +22,9 @@ func main() {
   err := client.DeleteAccount(id)
 
   // List
-  resp, err := client.ListAccounts()
-  accounts := resp.Accounts()
-  for resp.HasNext() {
-    resp, err = client.ListAccounts(resp.NextParams())
-    accounts = append(accounts, resp.Accounts()...)
+  res := client.ListAccounts(nil)
+  for res.NextPage() {
+    accounts, err := res.Accounts()
   }
 }
 ```
