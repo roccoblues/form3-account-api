@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net/http"
+	"time"
 )
 
 // Client represents a Form3 REST API Client.
@@ -43,6 +44,10 @@ func (e *HTTPError) Error() string {
 	return fmt.Sprintf("%d %s: %d %s", e.Response.StatusCode, e.Response.Status, e.ErrorCode, e.ErrorMessage)
 }
 
+// DefaultClientTimeout is the timeout, in seconds, used for http requests.
+// To adjust this pass a custom http client, see WithHTTPClient().
+const DefaultClientTimeout = 60
+
 // NewClient returns a new Client struct.
 func NewClient(baseURL string, options ...ClientOption) (*Client, error) {
 	if baseURL == "" {
@@ -50,7 +55,7 @@ func NewClient(baseURL string, options ...ClientOption) (*Client, error) {
 	}
 
 	c := &Client{
-		httpClient: &http.Client{},
+		httpClient: &http.Client{Timeout: time.Second * DefaultClientTimeout},
 		baseURL:    baseURL,
 	}
 	for _, option := range options {
