@@ -153,12 +153,14 @@ func (ar *AccountsIterator) Accounts() ([]*Account, error) {
 
 // NextPage advances the iterator and returns true if there are more results.
 func (ar *AccountsIterator) NextPage() bool {
-	if ar.payload != nil {
-		if ar.payload.Links.Next == "" {
-			return false
-		}
-		ar.path = ar.payload.Links.Next
+	if ar.payload == nil {
+		return true
 	}
 
+	if ar.payload.Links.Next == "" {
+		return false
+	}
+
+	ar.path = ar.payload.Links.Next
 	return true
 }
