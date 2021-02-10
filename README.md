@@ -16,7 +16,7 @@ func main() {
 }
 ```
 
-The `http.Client` used to make the actual HTTP requests can be configured.
+The `http.Client` used to make the actual HTTP requests can be changed. It just needs to fullfil the `form3.HTTPClient` interface.
 
 ```Go
 httpClient := &http.Client{Timeout: 10}
@@ -51,7 +51,7 @@ API_BASE="http://somewhere.else" go test
 
 ## Development Notes
 
-1. I've choosen to write integration tests only. They cover most of the code and all of the happy paths. For a production-ready solution unit tests to cover the error cases could be added.
+1. I've chosen to write integration tests only. They cover most of the code and all of the happy paths. For a production-ready solution unit tests to cover the error cases could be added.
 
 2. UUIDs are handled as simple strings. I chose to rely on the server to validate the correct format. This makes the client easier to use. Also the underlying format can be changed without breaking the library.
 
