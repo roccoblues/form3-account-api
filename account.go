@@ -50,7 +50,7 @@ type ListAccountsParams struct {
 type AccountsIterator struct {
 	client  *Client
 	payload *accountsPayload
-	params  *ListAccountsParams
+	path    string
 }
 
 // DefaultAccountsPageSize specifies the default number of results per page.
@@ -68,7 +68,7 @@ type accountsPayload struct {
 
 // GetAccount returns the account for the given ID.
 func (c *Client) GetAccount(id string) (*Account, error) {
-	req, err := c.NewRequest(http.MethodGet, fmt.Sprintf("/organisation/accounts/%s", id), nil)
+	req, err := c.NewRequest(http.MethodGet, fmt.Sprintf("/v1/organisation/accounts/%s", id), nil)
 	if err != nil {
 		return nil, err
 	}
@@ -91,7 +91,7 @@ func (c *Client) CreateAccount(id, organisationID string, attributes *AccountAtt
 			Attributes:     attributes,
 		},
 	}
-	req, err := c.NewRequest(http.MethodPost, "/organisation/accounts", payload)
+	req, err := c.NewRequest(http.MethodPost, "/v1/organisation/accounts", payload)
 	if err != nil {
 		return nil, err
 	}
@@ -106,7 +106,7 @@ func (c *Client) CreateAccount(id, organisationID string, attributes *AccountAtt
 
 // DeleteAccount deletes the account with the given ID and version.
 func (c *Client) DeleteAccount(id string, version int) error {
-	req, err := c.NewRequest(http.MethodDelete, fmt.Sprintf("/organisation/accounts/%s?version=%d", id, version), nil)
+	req, err := c.NewRequest(http.MethodDelete, fmt.Sprintf("/v1/organisation/accounts/%s?version=%d", id, version), nil)
 	if err != nil {
 		return err
 	}
@@ -123,16 +123,20 @@ func (c *Client) ListAccounts(params *ListAccountsParams) *AccountsIterator {
 		}
 	}
 
+	path := fmt.Sprintf("/v1/organisation/accounts?page[number]=%d&page[size]=%d",
+		params.PageNumber,
+		params.PageSize,
+	)
+
 	return &AccountsIterator{
 		client: c,
-		params: params,
+		path:   path,
 	}
 }
 
 // Accounts returns the accounts for the current page.
 func (ar *AccountsIterator) Accounts() ([]*Account, error) {
-	path := fmt.Sprintf("/organisation/accounts?page[number]=%d&page[size]=%d", ar.params.PageNumber, ar.params.PageSize)
-	req, err := ar.client.NewRequest(http.MethodGet, path, nil)
+	req, err := ar.client.NewRequest(http.MethodGet, ar.path, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -149,13 +153,11 @@ func (ar *AccountsIterator) Accounts() ([]*Account, error) {
 
 // NextPage advances the iterator and returns true if there are more results.
 func (ar *AccountsIterator) NextPage() bool {
-	if ar.payload != nil && ar.payload.Links.Next == "" {
-		return false
-	}
-
-	// only advance page after the first fetch, otherwise we'll skip the first page
 	if ar.payload != nil {
-		ar.params.PageNumber++
+		if ar.payload.Links.Next == "" {
+			return false
+		}
+		ar.path = ar.payload.Links.Next
 	}
 
 	return true

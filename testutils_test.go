@@ -7,7 +7,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-const defaultBaseURL = "http://localhost:8080/v1"
+const defaultBaseURL = "http://localhost:8080"
 
 func newTestClient(t *testing.T) *Client {
 	baseURL := os.Getenv("API_BASE")
