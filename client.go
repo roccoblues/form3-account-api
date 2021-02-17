@@ -49,7 +49,7 @@ func (e *HTTPError) Error() string {
 const DefaultClientTimeout = 60
 
 // NewClient returns a new Client struct.
-func NewClient(baseURL string, options ...ClientOption) (*Client, error) {
+func NewClient(baseURL string) (*Client, error) {
 	if baseURL == "" {
 		return nil, errors.New("baseURL is required")
 	}
@@ -58,18 +58,12 @@ func NewClient(baseURL string, options ...ClientOption) (*Client, error) {
 		httpClient: &http.Client{Timeout: time.Second * DefaultClientTimeout},
 		baseURL:    baseURL,
 	}
-	for _, option := range options {
-		option(c)
-	}
 	return c, nil
 }
 
-// ClientOption sets some additional options on a client.
-type ClientOption func(*Client)
-
-// WithHTTPClient sets the http client used to make the actual requests.
-func WithHTTPClient(httpClient HTTPClient) ClientOption {
-	return func(c *Client) { c.httpClient = httpClient }
+// SetHTTPClient sets the http client used to make the actual requests.
+func (c *Client) SetHTTPClient(httpClient HTTPClient) {
+	c.httpClient = httpClient
 }
 
 // NewRequest returns a http.Request for the given path.
