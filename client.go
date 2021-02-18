@@ -45,7 +45,7 @@ func (e *HTTPError) Error() string {
 }
 
 // DefaultClientTimeout is the timeout, in seconds, used for http requests.
-// To adjust this pass a custom http client, see WithHTTPClient().
+// To adjust this use a custom http client, see SetHTTPClient().
 const DefaultClientTimeout = 60
 
 // NewClient returns a new Client struct.
