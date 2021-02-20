@@ -1,6 +1,6 @@
 # form3-account-api
 
-This repository contains a client for the Form3 fake account API.
+This repository contains a client for the Form3 [interview account API](https://github.com/form3tech-oss/interview-accountapi).
 
 ## Usage
 
