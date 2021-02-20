@@ -80,7 +80,11 @@ func (c *Client) NewRequest(method, path string, payload interface{}) (*http.Req
 	}
 
 	buf := new(bytes.Buffer)
-	json.NewEncoder(buf).Encode(payload)
+	err := json.NewEncoder(buf).Encode(payload)
+	if err != nil {
+		return nil, err
+	}
+
 	return http.NewRequest(method, fmt.Sprintf("%s%s", c.baseURL, path), buf)
 }
 
