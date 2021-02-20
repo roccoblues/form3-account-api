@@ -72,7 +72,3 @@ API_BASE="http://somewhere.else" go test
 This API client currently only supports the non-deprecated working attributes.
 
 4. Another (known) issue is that the delete endpoint currently always returns 204, even for non-existing accounts. (see: https://github.com/form3tech-oss/interview-accountapi/issues/30)
-
-## Submitted by
-
-Dennis Schön (mail@dennis-schoen.de)
