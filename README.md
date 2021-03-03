@@ -33,8 +33,8 @@ The `http.Client` used to make the actual HTTP requests can be changed. It just 
 
 ```Go
 httpClient := &http.Client{Timeout: time.Second * 10}
-options := []form3.ClientOption{form3.WithHTTPClient(httpClient)}
-client, err := form3.NewClient("http://localhost:8080", options...)
+client, err := form3.NewClient("http://localhost:8080")
+client.SetHTTPClient(httpClient)
 ```
 
 ### Error handling
